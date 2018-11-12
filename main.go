@@ -1,7 +1,10 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
@@ -16,8 +19,42 @@ func env_load() {
 	}
 }
 
+func db_test() {
+	db, err := sql.Open("mysql", "root:root@tcp(127.0.0.1:8889)/ll3")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	rows, err := db.Query("SELECT * FROM users")
+	if err != nil {
+		panic(err)
+	}
+
+	var (
+		username string
+		mony     int
+	)
+
+	for rows.Next() {
+		err := rows.Scan(&username, &mony)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(username, mony)
+	}
+}
+
 func main() {
 	env_load()
+	db_test()
+
+	http.HandleFunc("/battle", battle)
 
 	http.HandleFunc("/hello", hello)
 
@@ -35,6 +72,17 @@ func main() {
 	})
 
 	http.ListenAndServe(":8080", nil)
+}
+
+// Web APIs
+func battle(writer http.ResponseWriter, request *http.Request) {
+	data := battleData{GotMony: 5}
+	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(writer).Encode(data)
+}
+
+type battleData struct {
+	GotMony int64 `json:"gotMony"`
 }
 
 func hello(w http.ResponseWriter, r *http.Request) {
@@ -65,3 +113,5 @@ type weatherData struct {
 		Kelvin float64 `json:"temp"`
 	} `json:"main"`
 }
+
+// Db Access
