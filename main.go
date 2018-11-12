@@ -48,11 +48,6 @@ func db_test() {
 		}
 		fmt.Println(username, mony)
 	}
-
-	err = db.QueryRow("SELECT mony FROM users WHERE username=?", "test_user").Scan(&mony)
-	if err != nil {
-		panic(err)
-	}
 }
 
 func main() {
@@ -81,10 +76,7 @@ func main() {
 
 // Web APIs
 func battle(writer http.ResponseWriter, request *http.Request) {
-	EARN := int64(5)
-	fmt.Println(request.URL.Path)
 	username := strings.SplitN(request.URL.Path, "/", 3)[2]
-	fmt.Println(username)
 
 	//
 	db, err := sql.Open("mysql", "root:root@tcp(127.0.0.1:8889)/ll3")
@@ -104,6 +96,7 @@ func battle(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	var mony int64
+	EARN := int64(5)
 
 	err = db.QueryRow("SELECT mony FROM users WHERE username=?", "test_user").Scan(&mony)
 	if err != nil {
