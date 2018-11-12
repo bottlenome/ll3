@@ -48,13 +48,18 @@ func db_test() {
 		}
 		fmt.Println(username, mony)
 	}
+
+	err = db.QueryRow("SELECT mony FROM users WHERE username=?", "test_user").Scan(&mony)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func main() {
 	env_load()
 	db_test()
 
-	http.HandleFunc("/battle", battle)
+	http.HandleFunc("/battle/", battle)
 
 	http.HandleFunc("/hello", hello)
 
@@ -76,13 +81,60 @@ func main() {
 
 // Web APIs
 func battle(writer http.ResponseWriter, request *http.Request) {
-	data := battleData{GotMony: 5}
+	EARN := int64(5)
+	fmt.Println(request.URL.Path)
+	username := strings.SplitN(request.URL.Path, "/", 3)[2]
+	fmt.Println(username)
+
+	//
+	db, err := sql.Open("mysql", "root:root@tcp(127.0.0.1:8889)/ll3")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	stmt, err := db.Prepare("SELECT * FROM users WHERE username = ?")
+	if err != nil {
+		panic(err)
+	}
+
+	var mony int64
+
+	err = db.QueryRow("SELECT mony FROM users WHERE username=?", "test_user").Scan(&mony)
+	if err != nil {
+		panic(err)
+	}
+
+	mony += EARN
+
+	stmt, err = db.Prepare("UPDATE users SET mony=? WHERE username=?")
+	if err != nil {
+		panic(err)
+	}
+
+	res, err := stmt.Exec(mony, username)
+	if err != nil {
+		panic(err)
+	}
+	rowCount, err := res.RowsAffected()
+	if rowCount != 1 {
+		panic(res)
+	}
+
+	data := battleData{UserName: username, GotMony: EARN, TotalMony: mony}
 	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(writer).Encode(data)
 }
 
 type battleData struct {
-	GotMony int64 `json:"gotMony"`
+	UserName  string `json:"userName"`
+	GotMony   int64  `json:"gotMony"`
+	TotalMony int64  `json:"totalMony"`
 }
 
 func hello(w http.ResponseWriter, r *http.Request) {
