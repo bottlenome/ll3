@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	repository "github.com/bottlenome/ll3/user/repository"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"log"
@@ -50,9 +51,20 @@ func db_test() {
 	}
 }
 
+func interface_test() {
+	mysql_user := new(repository.MysqlUserRepository)
+
+	user, err := mysql_user.GetByUserName("test_user")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(user.UserName, user.Mony)
+}
+
 func main() {
 	env_load()
 	db_test()
+	interface_test()
 
 	http.HandleFunc("/battle/", battle)
 
