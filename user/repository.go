@@ -1,7 +1,6 @@
 package user
 
 import (
-	"context"
 	"github.com/bottlenome/ll3/models"
 )
 

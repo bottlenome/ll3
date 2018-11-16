@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	repository "github.com/bottlenome/ll3/user/repository"
+	userRepository "github.com/bottlenome/ll3/user/repository"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"log"
@@ -52,9 +52,27 @@ func db_test() {
 }
 
 func interface_test() {
-	mysql_user := new(repository.MysqlUserRepository)
+	db, err := sql.Open("mysql", "root:root@tcp(127.0.0.1:8889)/ll3")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	mysql_user := userRepository.NewMysqlUserRepository(db)
 
 	user, err := mysql_user.GetByUserName("test_user")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(user.UserName, user.Mony)
+
+	user.Mony += 5
+	user, err = mysql_user.Update(user)
+	if err != nil {
+		panic(err)
+	}
+
+	user, err = mysql_user.GetByUserName("test_user")
 	if err != nil {
 		panic(err)
 	}

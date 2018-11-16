@@ -1,40 +1,34 @@
-package repository
+package user
 
 import (
 	"database/sql"
 	models "github.com/bottlenome/ll3/models"
+	user "github.com/bottlenome/ll3/user"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type MysqlUserRepository struct{}
+type mysqlUserRepository struct {
+	db *sql.DB
+}
 
-func (MysqlUserRepository) GetByUserName(username string) (*models.User, error) {
-	db, err := sql.Open("mysql", "root:root@tcp(127.0.0.1:8889)/ll3")
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
+func NewMysqlUserRepository(db *sql.DB) user.UserRepository {
+	return &mysqlUserRepository{db}
+}
 
-	var user models.User
-
-	err = db.QueryRow("SELECT * FROM users WHERE username=?", username).
+func (m *mysqlUserRepository) GetByUserName(username string) (*models.User, error) {
+	user := new(models.User)
+	err := m.db.QueryRow("SELECT * FROM users WHERE username=?", username).
 		Scan(&user.UserName,
 			&user.Mony)
 	if err != nil {
 		panic(err)
 	}
 
-	return &user, err
+	return user, err
 }
 
-func (MysqlUserRepository) Update(user *models.User) (*models.User, error) {
-	db, err := sql.Open("mysql", "root:root@tcp(127.0.0.1:8889)/ll3")
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	stmt, err := db.Prepare("UPDATE users SET mony=? WHERE username=?")
+func (m *mysqlUserRepository) Update(user *models.User) (*models.User, error) {
+	stmt, err := m.db.Prepare("UPDATE users SET mony=? WHERE username=?")
 	if err != nil {
 		panic(err)
 	}
