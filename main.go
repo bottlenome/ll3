@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	httpDeliver "github.com/bottlenome/ll3/user/delivery/http"
 	userRepository "github.com/bottlenome/ll3/user/repository"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
@@ -79,11 +80,7 @@ func interface_test() {
 	fmt.Println(user.UserName, user.Mony)
 }
 
-func main() {
-	env_load()
-	db_test()
-	interface_test()
-
+func http_test() {
 	http.HandleFunc("/battle/", battle)
 
 	http.HandleFunc("/hello", hello)
@@ -152,6 +149,24 @@ func battle(writer http.ResponseWriter, request *http.Request) {
 	data := battleData{UserName: username, GotMony: EARN, TotalMony: mony}
 	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(writer).Encode(data)
+
+}
+
+func main() {
+	env_load()
+	db_test()
+	interface_test()
+	// http_test()
+
+	// main
+	db, err := sql.Open("mysql", "root:root@tcp(127.0.0.1:8889)/ll3")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	mysql_user := userRepository.NewMysqlUserRepository(db)
+	httpDeliver.NewUserHandler(mysql_user)
 }
 
 type battleData struct {
