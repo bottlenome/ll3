@@ -8,7 +8,7 @@ import (
 )
 
 type HttpUserHandler struct {
-	Ur *user.UserRepository
+	Ua user.UserApplication
 }
 
 type battleData struct {
@@ -17,9 +17,9 @@ type battleData struct {
 	TotalMony int64  `json:"totalMony"`
 }
 
-func NewUserHandler(ur user.UserRepository) {
+func NewUserHandler(ua user.UserApplication) {
 	handler := HttpUserHandler{
-		Ur: ur,
+		Ua: ua,
 	}
 	http.HandleFunc("/battle/", handler.battle)
 	http.ListenAndServe(":8080", nil)
@@ -27,23 +27,14 @@ func NewUserHandler(ur user.UserRepository) {
 
 func (h *HttpUserHandler) battle(writer http.ResponseWriter, request *http.Request) {
 	username := strings.SplitN(request.URL.Path, "/", 3)[2]
-
-	user, err := h.Ur.GetByUserName(username)
-	if err != nil {
-		panic(err)
-	}
-
-	var mony int64
 	EARN := int64(5)
 
-	user.Mony += 5
-
-	user, err = h.Ur.Update(user)
+	mony, err := h.Ua.GetMony(username, EARN)
 	if err != nil {
 		panic(err)
 	}
 
-	data := battleData{UserName: username, GotMony: EARN, TotalMony: user.mony}
+	data := battleData{UserName: username, GotMony: EARN, TotalMony: mony}
 	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(writer).Encode(data)
 }
