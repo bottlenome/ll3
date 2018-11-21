@@ -16,7 +16,7 @@ func NewMysqlUserRepository(db *sql.DB) user.UserRepository {
 }
 
 func (m *mysqlUserRepository) GetByUserName(username string) (*models.User, error) {
-	user := new(models.User)
+	user := models.User{}
 	err := m.db.QueryRow("SELECT * FROM users WHERE username=?", username).
 		Scan(&user.UserName,
 			&user.Mony)
@@ -24,7 +24,7 @@ func (m *mysqlUserRepository) GetByUserName(username string) (*models.User, erro
 		panic(err)
 	}
 
-	return user, err
+	return &user, err
 }
 
 func (m *mysqlUserRepository) Update(user *models.User) (*models.User, error) {
