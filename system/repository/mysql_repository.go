@@ -77,3 +77,7 @@ func (m *mysqlSystemRepository) Rate() (float32, error) {
 func (m *mysqlSystemRepository) SetWithdrawRate(rate float32) error {
 	return m.set("withdraw_rate", fmt.Sprintf("%f", rate))
 }
+
+func (m *mysqlSystemRepository) WithdrawRate() (float32, error) {
+	return m.get("withdraw_rate")
+}

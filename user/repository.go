@@ -7,4 +7,5 @@ import (
 type UserRepository interface {
 	GetByUserName(username string) (*models.User, error)
 	Update(user *models.User) (*models.User, error)
+	CalcTotalMony() (float64, error)
 }

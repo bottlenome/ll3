@@ -8,4 +8,5 @@ type SystemRepository interface {
 	SetRate(rate float32) error
 	Rate() (float32, error)
 	SetWithdrawRate(rate float32) error
+	WithdrawRate() (float32, error)
 }

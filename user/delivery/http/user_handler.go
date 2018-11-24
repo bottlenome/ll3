@@ -13,8 +13,8 @@ type HttpUserHandler struct {
 
 type battleData struct {
 	UserName  string `json:"userName"`
-	GotMony   int64  `json:"gotMony"`
-	TotalMony int64  `json:"totalMony"`
+	GotMony   uint64 `json:"gotMony"`
+	TotalMony uint64 `json:"totalMony"`
 }
 
 func NewUserHandler(ua user.UserApplication) {
@@ -27,14 +27,13 @@ func NewUserHandler(ua user.UserApplication) {
 
 func (h *HttpUserHandler) battle(writer http.ResponseWriter, request *http.Request) {
 	username := strings.SplitN(request.URL.Path, "/", 3)[2]
-	EARN := int64(5)
 
-	mony, err := h.Ua.GetMony(username, EARN)
+	mony, earn, err := h.Ua.GetMony(username)
 	if err != nil {
 		panic(err)
 	}
 
-	data := battleData{UserName: username, GotMony: EARN, TotalMony: mony}
+	data := battleData{UserName: username, GotMony: earn, TotalMony: mony}
 	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(writer).Encode(data)
 }

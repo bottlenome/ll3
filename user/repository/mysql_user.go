@@ -5,6 +5,7 @@ import (
 	models "github.com/bottlenome/ll3/models"
 	user "github.com/bottlenome/ll3/user"
 	_ "github.com/go-sql-driver/mysql"
+	"log"
 )
 
 type mysqlUserRepository struct {
@@ -38,9 +39,19 @@ func (m *mysqlUserRepository) Update(user *models.User) (*models.User, error) {
 		panic(err)
 	}
 	rowCount, err := res.RowsAffected()
-	if rowCount != 1 {
-		panic(res)
+	if rowCount == 0 {
+		log.Print("Update for " + user.UserName + " has no effect")
+		return user, nil
 	}
 
 	return user, err
+}
+
+func (m *mysqlUserRepository) CalcTotalMony() (float64, error) {
+	total := 0.0
+	err := m.db.QueryRow("SELECT sum(mony) FROM users").Scan(&total)
+	if err != nil {
+		panic(err)
+	}
+	return total, err
 }
