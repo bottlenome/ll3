@@ -15,3 +15,6 @@ ll3
 
 # godotenv file
 .env
+
+# coverage file
+coverage.txt

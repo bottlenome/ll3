@@ -1,5 +1,5 @@
 test: build
-	go test -v ./...
+	go test -v -race -covermode=atomic -coverprofile=coverage.txt ./...
 
 build:
 	go build
