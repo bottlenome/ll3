@@ -47,9 +47,9 @@ func (m *mysqlUserRepository) Update(user *models.User) (*models.User, error) {
 	return user, err
 }
 
-func (m *mysqlUserRepository) CalcTotalMony() (float64, error) {
-	total := 0.0
-	err := m.db.QueryRow("SELECT sum(mony) FROM users").Scan(&total)
+func (m *mysqlUserRepository) CalcTotalMony() (total float64, err error) {
+	total = 0.0
+	err = m.db.QueryRow("SELECT sum(mony) FROM users").Scan(&total)
 	if err != nil {
 		panic(err)
 	}
