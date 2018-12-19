@@ -16,6 +16,14 @@ func Newll3SystemApplication(
 	return &ll3SystemApplication{repository, userRepository}
 }
 
+func (l *ll3SystemApplication) WithdrawRate() (float32, error) {
+	// check rate
+	rate, err := l.repository.Rate()
+	if err != nil {
+		panic(err)
+	}
+	return rate, nil
+}
 func (l *ll3SystemApplication) UpdateWithdrawRate() error {
 	// check rate
 	rate, err := l.repository.Rate()

@@ -44,5 +44,5 @@ func main() {
 	ll3_system := systemApplication.Newll3SystemApplication(mysql_system, mysql_user)
 	ll3_system.UpdateWithdrawRate()
 
-	httpDeliver.NewUserHandler(ll3_application)
+	httpDeliver.NewUserHandler(ll3_application, ll3_system)
 }
