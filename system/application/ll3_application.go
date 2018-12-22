@@ -1,6 +1,7 @@
 package system
 
 import (
+	"fmt"
 	"github.com/bottlenome/ll3/system"
 	"github.com/bottlenome/ll3/user"
 )
@@ -16,29 +17,34 @@ func Newll3SystemApplication(
 	return &ll3SystemApplication{repository, userRepository}
 }
 
-func (l *ll3SystemApplication) WithdrawRate() (float32, error) {
+func (l *ll3SystemApplication) getRate() (float32, error) {
 	// check rate
 	rate, err := l.repository.Rate()
 	if err != nil {
-		panic(err)
+		return 0.0, fmt.Errorf("faild to get rate : %v", err)
 	}
 	return rate, nil
 }
+
+func (l *ll3SystemApplication) WithdrawRate() (float32, error) {
+	return l.getRate()
+}
+
 func (l *ll3SystemApplication) UpdateWithdrawRate() error {
 	// check rate
-	rate, err := l.repository.Rate()
+	rate, err := l.getRate()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	unit, err := l.repository.Unit()
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("faild to get unit : %v", err)
 	}
 	target := float64(rate) * float64(unit)
 	// check total mony
 	total, err := l.userRepository.CalcTotalMony()
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("faild to CalcTotalMony : %v", err)
 	}
 	// modify withdraw_rate
 	err = l.repository.SetWithdrawRate(float32((target - total) / 10000.0))

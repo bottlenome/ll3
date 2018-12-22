@@ -64,11 +64,13 @@ func TestGetMonyNormal(t *testing.T) {
 	if err != nil {
 		t.Fatalf("faild test %#v", err)
 	}
-	if total != 21 {
-		t.Errorf("mismatch total:%d expect:%d", 5, total)
+	expect := uint64(21)
+	if total != expect {
+		t.Errorf("mismatch total:%d expect:%d", total, expect)
 	}
-	if earn != 11 {
-		t.Errorf("mismatch earn:%d expect:%d", 5, earn)
+	expect = uint64(11)
+	if earn != expect {
+		t.Errorf("mismatch earn:%d expect:%d", earn, expect)
 	}
 }
 
