@@ -12,6 +12,8 @@ type fakeSystemRepository struct {
 	FakeRate            func() (float32, error)
 	FakeUnit            func() (uint64, error)
 	FakeSetWithdrawRate func(rate float32) error
+	FakeSetWallet       func(address string) error
+	FakeWallet          func() (string, error)
 }
 
 type fakeUserRepository struct {
@@ -31,6 +33,15 @@ func (f *fakeSystemRepository) SetWithdrawRate(rate float32) error {
 	return f.FakeSetWithdrawRate(rate)
 }
 
+func (f *fakeSystemRepository) SetWallet(address string) error {
+	return f.FakeSetWallet(address)
+}
+
+func (f *fakeSystemRepository) Wallet() (string, error) {
+	return f.FakeWallet()
+}
+
+// user.repository
 func (f *fakeUserRepository) CalcTotalMony() (float64, error) {
 	return f.FakeCalcTotalMony()
 }
@@ -167,6 +178,47 @@ func TestUpdateWithrawRateError(t *testing.T) {
 	application = Newll3SystemApplication(&sr, &ur)
 	err = application.UpdateWithdrawRate()
 	if err == nil {
+		t.Fatalf("faild test %#v", err)
+	}
+}
+
+func TestSetWalletNormal(t *testing.T) {
+	sr := fakeSystemRepository{
+		FakeSetWallet: func(address string) error {
+			return nil
+		},
+	}
+	ur := fakeUserRepository{}
+	// TODO(bottlenome) I don't know why &sr works fine
+	application := Newll3SystemApplication(&sr, &ur)
+	err := application.SetWallet("012345678901234567890123456789012345678901")
+	if err != nil {
+		t.Fatalf("faild test %#v", err)
+	}
+}
+
+func TestSetWalletError(t *testing.T) {
+	sr := fakeSystemRepository{}
+	ur := fakeUserRepository{}
+	// TODO(bottlenome) I don't know why &sr works fine
+	application := Newll3SystemApplication(&sr, &ur)
+	err := application.SetWallet("")
+	if err == nil {
+		t.Fatalf("faild test %#v", err)
+	}
+}
+
+func TestWalletNormal(t *testing.T) {
+	sr := fakeSystemRepository{
+		FakeWallet: func() (string, error) {
+			return "hoge", nil
+		},
+	}
+	ur := fakeUserRepository{}
+	// TODO(bottlenome) I don't know why &sr works fine
+	application := Newll3SystemApplication(&sr, &ur)
+	address, err := application.Wallet()
+	if err != nil || address != "hoge" {
 		t.Fatalf("faild test %#v", err)
 	}
 }

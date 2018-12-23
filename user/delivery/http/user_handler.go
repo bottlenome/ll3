@@ -23,6 +23,11 @@ type withdrawRateData struct {
 	Rate float32 `json:"rate"`
 }
 
+type addressData struct {
+	Address string `json:"address"`
+	Status  string `json:"status"`
+}
+
 func NewUserHandler(ua user.UserApplication, sa system.SystemApplication) {
 	handler := HttpUserHandler{
 		Ua: ua,
@@ -30,6 +35,7 @@ func NewUserHandler(ua user.UserApplication, sa system.SystemApplication) {
 	}
 	http.HandleFunc("/battle/", handler.battle)
 	http.HandleFunc("/system/infrationTarget/", handler.infration_target)
+	http.HandleFunc("/system/wallet/address/", handler.address)
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -59,6 +65,35 @@ func (h *HttpUserHandler) infration_target(writer http.ResponseWriter, request *
 		}
 	}
 
+	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(writer).Encode(data)
+}
+
+func (h *HttpUserHandler) address_logic(inputs []string) (addressData, error) {
+	address := inputs[len(inputs)-1]
+	if address != "" {
+		err := h.Sa.SetWallet(address)
+		if err != nil {
+			return addressData{Address: "",
+				Status: err.Error()}, nil
+		}
+		return addressData{Address: address}, nil
+	} else {
+		address, err := h.Sa.Wallet()
+		if err != nil {
+			return addressData{Address: "",
+				Status: err.Error()}, nil
+		}
+		return addressData{Address: address}, nil
+	}
+}
+
+func (h *HttpUserHandler) address(writer http.ResponseWriter, request *http.Request) {
+	tmp := strings.SplitN(request.URL.Path, "/", 10)
+	data, err := h.address_logic(tmp)
+	if err != nil {
+		panic(err)
+	}
 	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(writer).Encode(data)
 }

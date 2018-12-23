@@ -50,6 +50,16 @@ func (m *mysqlSystemRepository) getUint64(target string) (uint64, error) {
 	return value, err
 }
 
+func (m *mysqlSystemRepository) getString(target string) (string, error) {
+	value := string("")
+	err := m.db.QueryRow("SELECT "+target+" FROM mony WHERE type=?", "wei").
+		Scan(&value)
+	if err != nil {
+		panic(err)
+	}
+	return value, err
+}
+
 func (m *mysqlSystemRepository) SetInflationTarget(target float32) error {
 	return m.set("inflation_target", fmt.Sprintf("%f", target))
 }
@@ -80,4 +90,12 @@ func (m *mysqlSystemRepository) SetWithdrawRate(rate float32) error {
 
 func (m *mysqlSystemRepository) WithdrawRate() (float32, error) {
 	return m.get("withdraw_rate")
+}
+
+func (m *mysqlSystemRepository) SetWallet(address string) error {
+	return m.set("wallet_address", address)
+}
+
+func (m *mysqlSystemRepository) Wallet() (string, error) {
+	return m.getString("wallet_address")
 }

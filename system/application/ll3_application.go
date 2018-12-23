@@ -50,3 +50,14 @@ func (l *ll3SystemApplication) UpdateWithdrawRate() error {
 	err = l.repository.SetWithdrawRate(float32((target - total) / 10000.0))
 	return err
 }
+
+func (l *ll3SystemApplication) Wallet() (string, error) {
+	return l.repository.Wallet()
+}
+
+func (l *ll3SystemApplication) SetWallet(address string) error {
+	if len(address) != 42 {
+		return fmt.Errorf("invalid address size : %d", len(address))
+	}
+	return l.repository.SetWallet(address)
+}
