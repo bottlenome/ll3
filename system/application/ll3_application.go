@@ -61,3 +61,11 @@ func (l *ll3SystemApplication) SetWallet(address string) error {
 	}
 	return l.repository.SetWallet(address)
 }
+
+func (l *ll3SystemApplication) FixedIncome() (float64, error) {
+	return l.repository.FixedIncome()
+}
+
+func (l *ll3SystemApplication) SetFixedIncome(income float64) error {
+	return l.repository.SetFixedIncome(income)
+}

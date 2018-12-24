@@ -14,6 +14,8 @@ type fakeSystemRepository struct {
 	FakeSetWithdrawRate func(rate float32) error
 	FakeSetWallet       func(address string) error
 	FakeWallet          func() (string, error)
+	FakeSetFixedIncome  func(income float64) error
+	FakeFixedIncome     func() (float64, error)
 }
 
 type fakeUserRepository struct {
@@ -39,6 +41,14 @@ func (f *fakeSystemRepository) SetWallet(address string) error {
 
 func (f *fakeSystemRepository) Wallet() (string, error) {
 	return f.FakeWallet()
+}
+
+func (f *fakeSystemRepository) SetFixedIncome(income float64) error {
+	return f.FakeSetFixedIncome(income)
+}
+
+func (f *fakeSystemRepository) FixedIncome() (float64, error) {
+	return f.FakeFixedIncome()
 }
 
 // user.repository
@@ -219,6 +229,66 @@ func TestWalletNormal(t *testing.T) {
 	application := Newll3SystemApplication(&sr, &ur)
 	address, err := application.Wallet()
 	if err != nil || address != "hoge" {
+		t.Fatalf("faild test %#v", err)
+	}
+}
+
+func TestSetFixedIncomeNormal(t *testing.T) {
+	sr := fakeSystemRepository{
+		FakeSetFixedIncome: func(float64) error {
+			return nil
+		},
+	}
+	ur := fakeUserRepository{}
+	// TODO(bottlenome) I don't know why &sr works fine
+	application := Newll3SystemApplication(&sr, &ur)
+	err := application.SetFixedIncome(float64(10.0))
+	if err != nil {
+		t.Fatalf("faild test %#v", err)
+	}
+}
+
+func TestSetFixedIncomeError(t *testing.T) {
+	sr := fakeSystemRepository{
+		FakeSetFixedIncome: func(float64) error {
+			return errors.New("SetFixedIncome")
+		},
+	}
+	ur := fakeUserRepository{}
+	// TODO(bottlenome) I don't know why &sr works fine
+	application := Newll3SystemApplication(&sr, &ur)
+	err := application.SetFixedIncome(float64(10.0))
+	if err == nil {
+		t.Fatalf("faild test %#v", err)
+	}
+}
+
+func TestFixedIncomeNormal(t *testing.T) {
+	sr := fakeSystemRepository{
+		FakeFixedIncome: func() (float64, error) {
+			return float64(10.0), nil
+		},
+	}
+	ur := fakeUserRepository{}
+	// TODO(bottlenome) I don't know why &sr works fine
+	application := Newll3SystemApplication(&sr, &ur)
+	income, err := application.FixedIncome()
+	if err != nil || income != 10.0 {
+		t.Fatalf("faild test %#v", err)
+	}
+}
+
+func TestFixedIncomeError(t *testing.T) {
+	sr := fakeSystemRepository{
+		FakeFixedIncome: func() (float64, error) {
+			return float64(10.0), errors.New("FixedIncome")
+		},
+	}
+	ur := fakeUserRepository{}
+	// TODO(bottlenome) I don't know why &sr works fine
+	application := Newll3SystemApplication(&sr, &ur)
+	_, err := application.FixedIncome()
+	if err == nil {
 		t.Fatalf("faild test %#v", err)
 	}
 }

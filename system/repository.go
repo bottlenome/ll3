@@ -11,4 +11,6 @@ type SystemRepository interface {
 	WithdrawRate() (float32, error)
 	SetWallet(string) error
 	Wallet() (string, error)
+	SetFixedIncome(float64) error
+	FixedIncome() (float64, error)
 }

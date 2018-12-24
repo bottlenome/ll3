@@ -2,9 +2,11 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/bottlenome/ll3/system"
 	"github.com/bottlenome/ll3/user"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -28,6 +30,11 @@ type addressData struct {
 	Status  string `json:"status"`
 }
 
+type fixedIncomeData struct {
+	FixedIncome float64 `json:"fixed_income"`
+	Status      string  `json:"status"`
+}
+
 func NewUserHandler(ua user.UserApplication, sa system.SystemApplication) {
 	handler := HttpUserHandler{
 		Ua: ua,
@@ -36,6 +43,7 @@ func NewUserHandler(ua user.UserApplication, sa system.SystemApplication) {
 	http.HandleFunc("/battle/", handler.battle)
 	http.HandleFunc("/system/infrationTarget/", handler.infration_target)
 	http.HandleFunc("/system/wallet/address/", handler.address)
+	http.HandleFunc("/system/wallet/fixed_income/", handler.fixed_income)
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -91,6 +99,40 @@ func (h *HttpUserHandler) address_logic(inputs []string) (addressData, error) {
 func (h *HttpUserHandler) address(writer http.ResponseWriter, request *http.Request) {
 	tmp := strings.SplitN(request.URL.Path, "/", 10)
 	data, err := h.address_logic(tmp)
+	if err != nil {
+		panic(err)
+	}
+	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(writer).Encode(data)
+}
+
+func (h *HttpUserHandler) fixed_income_logic(inputs []string) (fixedIncomeData, error) {
+	income := inputs[len(inputs)-1]
+	if income != "" {
+		income64, err := strconv.ParseFloat(income, 64)
+		if err != nil {
+			return fixedIncomeData{FixedIncome: 0.0,
+				Status: fmt.Errorf("invalid format: %v", income).Error()}, nil
+		}
+		err = h.Sa.SetFixedIncome(income64)
+		if err != nil {
+			return fixedIncomeData{FixedIncome: 0.0,
+				Status: err.Error()}, nil
+		}
+		return fixedIncomeData{FixedIncome: income64}, nil
+	} else {
+		income, err := h.Sa.FixedIncome()
+		if err != nil {
+			return fixedIncomeData{FixedIncome: 0.0,
+				Status: err.Error()}, nil
+		}
+		return fixedIncomeData{FixedIncome: income}, nil
+	}
+}
+
+func (h *HttpUserHandler) fixed_income(writer http.ResponseWriter, request *http.Request) {
+	tmp := strings.SplitN(request.URL.Path, "/", 10)
+	data, err := h.fixed_income_logic(tmp)
 	if err != nil {
 		panic(err)
 	}

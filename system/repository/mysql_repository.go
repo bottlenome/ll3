@@ -40,6 +40,16 @@ func (m *mysqlSystemRepository) get(target string) (float32, error) {
 	return value, err
 }
 
+func (m *mysqlSystemRepository) getFloat64(target string) (float64, error) {
+	value := float64(0.0)
+	err := m.db.QueryRow("SELECT "+target+" FROM mony WHERE type=?", "wei").
+		Scan(&value)
+	if err != nil {
+		panic(err)
+	}
+	return value, err
+}
+
 func (m *mysqlSystemRepository) getUint64(target string) (uint64, error) {
 	value := uint64(0.0)
 	err := m.db.QueryRow("SELECT "+target+" FROM mony WHERE type=?", "wei").
@@ -98,4 +108,12 @@ func (m *mysqlSystemRepository) SetWallet(address string) error {
 
 func (m *mysqlSystemRepository) Wallet() (string, error) {
 	return m.getString("wallet_address")
+}
+
+func (m *mysqlSystemRepository) SetFixedIncome(income float64) error {
+	return m.set("fixed_income", fmt.Sprintf("%f", income))
+}
+
+func (m *mysqlSystemRepository) FixedIncome() (float64, error) {
+	return m.getFloat64("fixed_income")
 }
