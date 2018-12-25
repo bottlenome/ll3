@@ -13,4 +13,6 @@ type SystemRepository interface {
 	Wallet() (string, error)
 	SetFixedIncome(float64) error
 	FixedIncome() (float64, error)
+	SetRatioIncome(float64) error
+	RatioIncome() (float64, error)
 }

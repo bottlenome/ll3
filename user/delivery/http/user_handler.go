@@ -35,6 +35,11 @@ type fixedIncomeData struct {
 	Status      string  `json:"status"`
 }
 
+type ratioIncomeData struct {
+	RatioIncome float64 `json:"ratio_income"`
+	Status      string  `json:"status"`
+}
+
 func NewUserHandler(ua user.UserApplication, sa system.SystemApplication) {
 	handler := HttpUserHandler{
 		Ua: ua,
@@ -44,6 +49,7 @@ func NewUserHandler(ua user.UserApplication, sa system.SystemApplication) {
 	http.HandleFunc("/system/infrationTarget/", handler.infration_target)
 	http.HandleFunc("/system/wallet/address/", handler.address)
 	http.HandleFunc("/system/wallet/fixed_income/", handler.fixed_income)
+	http.HandleFunc("/system/wallet/ratio_income/", handler.ratio_income)
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -133,6 +139,40 @@ func (h *HttpUserHandler) fixed_income_logic(inputs []string) (fixedIncomeData, 
 func (h *HttpUserHandler) fixed_income(writer http.ResponseWriter, request *http.Request) {
 	tmp := strings.SplitN(request.URL.Path, "/", 10)
 	data, err := h.fixed_income_logic(tmp)
+	if err != nil {
+		panic(err)
+	}
+	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(writer).Encode(data)
+}
+
+func (h *HttpUserHandler) ratio_income_logic(inputs []string) (ratioIncomeData, error) {
+	income := inputs[len(inputs)-1]
+	if income != "" {
+		income64, err := strconv.ParseFloat(income, 64)
+		if err != nil {
+			return ratioIncomeData{RatioIncome: 0.0,
+				Status: fmt.Errorf("invalid format: %v", income).Error()}, nil
+		}
+		err = h.Sa.SetRatioIncome(income64)
+		if err != nil {
+			return ratioIncomeData{RatioIncome: 0.0,
+				Status: err.Error()}, nil
+		}
+		return ratioIncomeData{RatioIncome: income64}, nil
+	} else {
+		income, err := h.Sa.RatioIncome()
+		if err != nil {
+			return ratioIncomeData{RatioIncome: 0.0,
+				Status: err.Error()}, nil
+		}
+		return ratioIncomeData{RatioIncome: income}, nil
+	}
+}
+
+func (h *HttpUserHandler) ratio_income(writer http.ResponseWriter, request *http.Request) {
+	tmp := strings.SplitN(request.URL.Path, "/", 10)
+	data, err := h.ratio_income_logic(tmp)
 	if err != nil {
 		panic(err)
 	}

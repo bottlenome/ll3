@@ -16,6 +16,8 @@ type fakeSystemRepository struct {
 	FakeWallet          func() (string, error)
 	FakeSetFixedIncome  func(income float64) error
 	FakeFixedIncome     func() (float64, error)
+	FakeSetRatioIncome  func(income float64) error
+	FakeRatioIncome     func() (float64, error)
 }
 
 type fakeUserRepository struct {
@@ -49,6 +51,14 @@ func (f *fakeSystemRepository) SetFixedIncome(income float64) error {
 
 func (f *fakeSystemRepository) FixedIncome() (float64, error) {
 	return f.FakeFixedIncome()
+}
+
+func (f *fakeSystemRepository) SetRatioIncome(income float64) error {
+	return f.FakeSetRatioIncome(income)
+}
+
+func (f *fakeSystemRepository) RatioIncome() (float64, error) {
+	return f.FakeRatioIncome()
 }
 
 // user.repository
@@ -288,6 +298,70 @@ func TestFixedIncomeError(t *testing.T) {
 	// TODO(bottlenome) I don't know why &sr works fine
 	application := Newll3SystemApplication(&sr, &ur)
 	_, err := application.FixedIncome()
+	if err == nil {
+		t.Fatalf("faild test %#v", err)
+	}
+}
+
+func TestSetRatioIncomeNormal(t *testing.T) {
+	sr := fakeSystemRepository{
+		FakeSetRatioIncome: func(float64) error {
+			return nil
+		},
+	}
+	ur := fakeUserRepository{}
+	// TODO(bottlenome) I don't know why &sr works fine
+	application := Newll3SystemApplication(&sr, &ur)
+	err := application.SetRatioIncome(float64(0.1))
+	if err != nil {
+		t.Fatalf("faild test %#v", err)
+	}
+}
+
+func TestSetRatioIncomeError(t *testing.T) {
+	sr := fakeSystemRepository{
+		FakeSetRatioIncome: func(float64) error {
+			return errors.New("SetRatioIncome")
+		},
+	}
+	ur := fakeUserRepository{}
+	// TODO(bottlenome) I don't know why &sr works fine
+	application := Newll3SystemApplication(&sr, &ur)
+	err := application.SetRatioIncome(float64(10.0))
+	if err == nil {
+		t.Fatalf("faild test %#v", err)
+	}
+	err = application.SetRatioIncome(float64(0.1))
+	if err == nil {
+		t.Fatalf("faild test %#v", err)
+	}
+}
+
+func TestRatioIncomeNormal(t *testing.T) {
+	sr := fakeSystemRepository{
+		FakeRatioIncome: func() (float64, error) {
+			return float64(0.1), nil
+		},
+	}
+	ur := fakeUserRepository{}
+	// TODO(bottlenome) I don't know why &sr works fine
+	application := Newll3SystemApplication(&sr, &ur)
+	income, err := application.RatioIncome()
+	if err != nil || income != 0.1 {
+		t.Fatalf("faild test %#v", err)
+	}
+}
+
+func TestRatioIncomeError(t *testing.T) {
+	sr := fakeSystemRepository{
+		FakeRatioIncome: func() (float64, error) {
+			return float64(0.1), errors.New("RatioIncome")
+		},
+	}
+	ur := fakeUserRepository{}
+	// TODO(bottlenome) I don't know why &sr works fine
+	application := Newll3SystemApplication(&sr, &ur)
+	_, err := application.RatioIncome()
 	if err == nil {
 		t.Fatalf("faild test %#v", err)
 	}

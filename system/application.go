@@ -7,4 +7,6 @@ type SystemApplication interface {
 	SetWallet(address string) error
 	FixedIncome() (income float64, err error)
 	SetFixedIncome(income float64) error
+	RatioIncome() (income float64, err error)
+	SetRatioIncome(income float64) error
 }

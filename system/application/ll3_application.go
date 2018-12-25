@@ -69,3 +69,14 @@ func (l *ll3SystemApplication) FixedIncome() (float64, error) {
 func (l *ll3SystemApplication) SetFixedIncome(income float64) error {
 	return l.repository.SetFixedIncome(income)
 }
+
+func (l *ll3SystemApplication) RatioIncome() (float64, error) {
+	return l.repository.RatioIncome()
+}
+
+func (l *ll3SystemApplication) SetRatioIncome(income float64) error {
+	if income > 1.0 {
+		return fmt.Errorf("invalid income ratio : %f", income)
+	}
+	return l.repository.SetRatioIncome(income)
+}

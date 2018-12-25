@@ -117,3 +117,11 @@ func (m *mysqlSystemRepository) SetFixedIncome(income float64) error {
 func (m *mysqlSystemRepository) FixedIncome() (float64, error) {
 	return m.getFloat64("fixed_income")
 }
+
+func (m *mysqlSystemRepository) SetRatioIncome(income float64) error {
+	return m.set("ratio_income", fmt.Sprintf("%f", income))
+}
+
+func (m *mysqlSystemRepository) RatioIncome() (float64, error) {
+	return m.getFloat64("ratio_income")
+}
