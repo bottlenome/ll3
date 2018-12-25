@@ -19,10 +19,12 @@ type battleData struct {
 	UserName  string `json:"userName"`
 	GotMony   uint64 `json:"gotMony"`
 	TotalMony uint64 `json:"totalMony"`
+	Status    string `json:"status"`
 }
 
 type withdrawRateData struct {
-	Rate float32 `json:"rate"`
+	Rate   float32 `json:"rate"`
+	Status string  `json:"status"`
 }
 
 type addressData struct {
@@ -45,45 +47,64 @@ func NewUserHandler(ua user.UserApplication, sa system.SystemApplication) {
 		Ua: ua,
 		Sa: sa,
 	}
-	http.HandleFunc("/battle/", handler.battle)
-	http.HandleFunc("/system/infrationTarget/", handler.infration_target)
-	http.HandleFunc("/system/wallet/address/", handler.address)
-	http.HandleFunc("/system/wallet/fixed_income/", handler.fixed_income)
-	http.HandleFunc("/system/wallet/ratio_income/", handler.ratio_income)
+	http.HandleFunc("/battle/",
+		func(writer http.ResponseWriter, request *http.Request) {
+			handler.generic_handler(writer, request, handler.battle_logic)
+		})
+	http.HandleFunc("/system/infrationTarget/",
+		func(writer http.ResponseWriter, request *http.Request) {
+			handler.generic_handler(writer, request, handler.infration_target_logic)
+		})
+	http.HandleFunc("/system/wallet/address/",
+		func(writer http.ResponseWriter, request *http.Request) {
+			handler.generic_handler(writer, request, handler.address_logic)
+		})
+	http.HandleFunc("/system/wallet/fixed_income/",
+		func(writer http.ResponseWriter, request *http.Request) {
+			handler.generic_handler(writer, request, handler.fixed_income_logic)
+		})
+	http.HandleFunc("/system/wallet/ratio_income/",
+		func(writer http.ResponseWriter, request *http.Request) {
+			handler.generic_handler(writer, request, handler.ratio_income_logic)
+		})
 	http.ListenAndServe(":8080", nil)
 }
 
-func (h *HttpUserHandler) battle(writer http.ResponseWriter, request *http.Request) {
-	username := strings.SplitN(request.URL.Path, "/", 3)[2]
-
-	// TODO change Ua. GetMony to return battleData
-	mony, earn, err := h.Ua.GetMony(username)
+func (h *HttpUserHandler) generic_handler(writer http.ResponseWriter,
+	request *http.Request, f func([]string) (interface{}, error)) {
+	tmp := strings.SplitN(request.URL.Path, "/", 10)
+	data, err := f(tmp)
 	if err != nil {
 		panic(err)
 	}
-
-	data := battleData{UserName: username, GotMony: earn, TotalMony: mony}
 	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(writer).Encode(data)
 }
 
-func (h *HttpUserHandler) infration_target(writer http.ResponseWriter, request *http.Request) {
-	tmp := strings.SplitN(request.URL.Path, "/", 10)
-	data := withdrawRateData{}
-	if tmp[len(tmp)-1] == "" {
-		// TODO change Sa.WithdrawRate() to return withdrawRateData
-		rate, err := h.Sa.WithdrawRate()
-		data.Rate = rate
+func (h *HttpUserHandler) battle_logic(inputs []string) (interface{}, error) {
+	if inputs[len(inputs)-1] != "" {
+		username := inputs[len(inputs)-1]
+		mony, earn, err := h.Ua.GetMony(username)
 		if err != nil {
-			panic(err)
+			return battleData{Status: err.Error()}, nil
 		}
+		return battleData{UserName: username, GotMony: earn, TotalMony: mony}, nil
 	}
-
-	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(writer).Encode(data)
+	return battleData{Status: fmt.Errorf("please input username").Error()}, nil
 }
 
-func (h *HttpUserHandler) address_logic(inputs []string) (addressData, error) {
+func (h *HttpUserHandler) infration_target_logic(inputs []string) (interface{}, error) {
+	if inputs[len(inputs)-1] == "" {
+		rate, err := h.Sa.WithdrawRate()
+		if err != nil {
+			return withdrawRateData{Status: err.Error()}, nil
+		}
+		return withdrawRateData{Rate: rate}, nil
+	}
+	return withdrawRateData{Status: fmt.Errorf("Does not support set").Error()}, nil
+}
+
+func (h *HttpUserHandler) address_logic(inputs []string) (interface{}, error) {
 	address := inputs[len(inputs)-1]
 	if address != "" {
 		err := h.Sa.SetWallet(address)
@@ -102,17 +123,7 @@ func (h *HttpUserHandler) address_logic(inputs []string) (addressData, error) {
 	}
 }
 
-func (h *HttpUserHandler) address(writer http.ResponseWriter, request *http.Request) {
-	tmp := strings.SplitN(request.URL.Path, "/", 10)
-	data, err := h.address_logic(tmp)
-	if err != nil {
-		panic(err)
-	}
-	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(writer).Encode(data)
-}
-
-func (h *HttpUserHandler) fixed_income_logic(inputs []string) (fixedIncomeData, error) {
+func (h *HttpUserHandler) fixed_income_logic(inputs []string) (interface{}, error) {
 	income := inputs[len(inputs)-1]
 	if income != "" {
 		income64, err := strconv.ParseFloat(income, 64)
@@ -136,17 +147,7 @@ func (h *HttpUserHandler) fixed_income_logic(inputs []string) (fixedIncomeData, 
 	}
 }
 
-func (h *HttpUserHandler) fixed_income(writer http.ResponseWriter, request *http.Request) {
-	tmp := strings.SplitN(request.URL.Path, "/", 10)
-	data, err := h.fixed_income_logic(tmp)
-	if err != nil {
-		panic(err)
-	}
-	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(writer).Encode(data)
-}
-
-func (h *HttpUserHandler) ratio_income_logic(inputs []string) (ratioIncomeData, error) {
+func (h *HttpUserHandler) ratio_income_logic(inputs []string) (interface{}, error) {
 	income := inputs[len(inputs)-1]
 	if income != "" {
 		income64, err := strconv.ParseFloat(income, 64)
@@ -168,14 +169,4 @@ func (h *HttpUserHandler) ratio_income_logic(inputs []string) (ratioIncomeData, 
 		}
 		return ratioIncomeData{RatioIncome: income}, nil
 	}
-}
-
-func (h *HttpUserHandler) ratio_income(writer http.ResponseWriter, request *http.Request) {
-	tmp := strings.SplitN(request.URL.Path, "/", 10)
-	data, err := h.ratio_income_logic(tmp)
-	if err != nil {
-		panic(err)
-	}
-	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(writer).Encode(data)
 }
