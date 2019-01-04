@@ -1,11 +1,12 @@
 language: go
-
 go:
-  - "1.11"
-  - tip
-
+- '1.11'
+- tip
 before_install:
-  - go get -t -v ./...
-
+- go get -t -v ./...
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+- bash <(curl -s https://codecov.io/bash)
+env:
+  global:
+  - secure: lbcaxdrc6xnKviQe141TCobg93PSkwkiIvLAqDVZA7zZVYCA2QcEadBXgbMRp5CTFVDWQpvp2k/Cd8UgSJexSChDVDITGtHrjbUeBbM/KPmGOKuGF04Tz2Zt79DYhO2utrJCXKdWexmC+YvBLffwoVlO4aw3FQX9f9Y7QBuXMlYPWXoLlGbWa37RYdmi31aHA2RAxLUW4PS6bUbDNzkTv4WlZEr19+/4cXZRzIsU7WlNXSz98Yjf/CNH7g1jl8XTgLTLnjB6BVt0iGLs76ixLy59gzaKMrz+vqND40fYM5MA8Y7veL3xsdICmvzQq4ZHlgBE2lmg554Xx72K91OXFpT2q4qfSDXOXBTnLhTCTmLZ/RV9OmEPnMq6/7+nh7W68rlGtmGf+aq0oTGY3YgNuBaHpx7OczcKRW8hY9zgX7T5+aFN3wpYmrXj4HJd9HD+Rz7oN7VoXwHs0StoIxthWn4u8MjMkfjVXNPN2J6haobvoZsg9T76kybNXQLo/DWKmxkPHomRh22GoGt1zHh1V/7ZUPvPvMfwkgMTdl5/jxwght6UUFrAJ+7oZcSq89wbuV8F0RiQJUceTrOR3xu8OBxINUGGroAH/EeW6a4OmRFDDjXkUg2f0tKKOLkjMG7+ZUXEPU5BPp6+zb0vF+Ystgtro9QJ/fFfyl+q4QZWtBM=
+  - secure: IHrhvWkZXjvjEsLdLAtJ0TYUQfvqY5z3mU+dOUYEopNw/HO72QkDCZEGVGp6fyVDRliOyVxhoyloOGRVCLMHIP4sL6xqwcy+XF6rCe1ZMPQ9EguO0hvEbYvWMxhOAv3VJG5C3neXmlq5chNIpfRC3oNTuO1bUGyTIzNR4TnTDXfURVYgqcbyEAVyFKWayWdXi3lRm/rI6Rn5HEaIfqtiWupXG9q1K2++baTjln25G//jKjj/Uu3en/jGtajlf7ISNPtdvEZkeCaUoxN7TNY3GuSOHaRtEvK6s5DVyu6r2PgyuFt+dsne5iCrJHP7Fr1ujueJzgJagEqfeGIfSj7B7rhguECSvurRDheB6R/AOv34y6oTBCvhuERaVdMYrPP4AGudthBFLL9X/4o3xxm8b5tZXWYDCgzTCAiwwL82wsH/q5cFbby/yjTlG5+lt56k1rv0bltYmRw3PS9lJtXSmvXEljwlCwiYAHzLsBOiHM7KDPeauJ6fPGBYkuE2kjJVXJpe9C8CywZy0iTmkCTfDyvyUmm4g2a7Rs6jTk5CI0uaGzM1EwtHhrbkOg4laFQf5bz6RS/4FZf6Cf7T6QWf+9jbiNWlPbP4/rcntkq79NfvFPgrNiTUoV2swZ9CeKJTIRZKx1A/b4XIH5W1UYkEoUgRdyIUEn0e96jya5jal7U=
